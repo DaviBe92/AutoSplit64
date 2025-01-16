@@ -44,8 +44,6 @@ class App(QtWidgets.QMainWindow):
                                       pixmap_hover=QtGui.QPixmap(base_path(constants.STAR_HOVER_PATH)),
                                       parent=self.central_widget)
         self.start_btn = StateButton(self.start_pixmap, self.start_pixmap, parent=self.central_widget)
-        self.close_btn = PictureButton(QtGui.QPixmap(base_path(constants.CLOSE_PATH)), parent=self.central_widget)
-        self.minimize_btn = PictureButton(QtGui.QPixmap(base_path(constants.MINIMIZE_PATH)), parent=self.central_widget)
         self.split_list = SplitListWidget(self.central_widget)
 
         # Font
@@ -73,16 +71,16 @@ class App(QtWidgets.QMainWindow):
         
         # Handle splash screen closure
         try:
-            import pyi_splash
+            import pyi_splash # type: ignore
             pyi_splash.close()
         except (ImportError, ModuleNotFoundError):
             pass
 
     def set_always_on_top(self, on_top):
         if on_top:
-            self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint | QtCore.Qt.WindowType.WindowStaysOnTopHint)
+            self.setWindowFlags(QtCore.Qt.WindowType.MSWindowsFixedSizeDialogHint | QtCore.Qt.WindowType.WindowStaysOnTopHint)
         else:
-            self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint)
+            self.setWindowFlags(QtCore.Qt.WindowType.MSWindowsFixedSizeDialogHint)
 
         self.show()
 
@@ -91,9 +89,10 @@ class App(QtWidgets.QMainWindow):
         self.setWindowTitle(self.title)
 
         if config.get("general", "on_top"):
-            self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint | QtCore.Qt.WindowType.WindowStaysOnTopHint)
+            self.setWindowFlags(QtCore.Qt.WindowType.MSWindowsFixedSizeDialogHint | QtCore.Qt.WindowType.WindowStaysOnTopHint)
         else:
-            self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint)
+        #     self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint)
+            self.setWindowFlags(QtCore.Qt.WindowType.MSWindowsFixedSizeDialogHint)
 
         self.setFixedSize(self.width, self.height)
 
@@ -106,9 +105,6 @@ class App(QtWidgets.QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         # Configure Other Widgets
-        self.close_btn.move(340, 8)
-        self.minimize_btn.move(320, 8)
-
         self.star_btn.move(250, 68)
 
         self.star_count.setFixedWidth(150)
@@ -132,8 +128,6 @@ class App(QtWidgets.QMainWindow):
         self.open_route()
 
         # Connections
-        self.close_btn.clicked.connect(self.close)
-        self.minimize_btn.clicked.connect(self.showMinimized)
         self.start_btn.clicked.connect(self.start_clicked)
         self.star_btn.clicked.connect(self._reset)
         self.dialogs["route_editor"].route_updated.connect(self._on_route_update)
@@ -414,3 +408,7 @@ class App(QtWidgets.QMainWindow):
 
         self.stop.emit()
         super().close()
+        
+    def closeEvent(self, event):
+        self.close()
+        event.accept()

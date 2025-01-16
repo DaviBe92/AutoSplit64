@@ -1,5 +1,4 @@
 import numpy as np
-from tf_keras.preprocessing.image import img_to_array
 import cv2
 
 
@@ -14,9 +13,13 @@ def is_white(image, threshold=0.8):
 
 
 def convert_to_np(img_array):
-    np_images = [(img_to_array(image) / 255) for image in img_array]
-
-    return np.array(np_images)
+    # Convert to numpy array and normalize
+    np_img = np.array(img_array).astype(np.float32)
+    np_img = np_img / 255.0
+    
+    # Add batch dimension
+    np_img = np.expand_dims(np_img, axis=0)
+    return np_img
 
 
 def convert_to_cv2(img):

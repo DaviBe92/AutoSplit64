@@ -1,6 +1,5 @@
 import time
 import os
-import shutil
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 import cv2

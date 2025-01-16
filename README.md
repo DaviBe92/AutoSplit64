@@ -1,8 +1,6 @@
-<h1 align="center"> AutoSplit64 </h1><br>
+<h1 align="center"> AutoSplit64+ </h1><br>
 <p align="center">
-  <a href="https://gitpoint.co/">
-    <img alt="SM64" title="SM64" src="https://imgur.com/B3eyq3A.png" width="168">
-  </a>
+    <img alt="AS64+" title="AS64+" src="resources\gui\icons\as64plus.png" width="256">
 </p>
 
 ## Table of Contents
@@ -19,21 +17,21 @@
 - [Troubleshooting](#troubleshooting)
 - [Running/Building from Source](#runningbuilding-from-source)
 - [Credit](#credit)
-- [Contact](#contact)
-- [Donate](#donate)
+- [Support](#support)
 - [Author](#author)
 
 ## Introduction
 
-Inspired by Gerardo Cervantes's [Star Classifier](https://github.com/gerardocervantes8/Star-Classifier-For-Mario-64), AutoSplit 64 analyzes your game capture to automate splitting.
+AutoSplit64+ analyzes your game capture to automate splitting.
 
-AutoSplit64 is primarily designed for console use, and is the only officialy supported platform, however may still function for Emulator.
+AutoSplit64+ is primarily designed for console use.
+
+It should also work on emulator, but its not officially supported.
 For details on proper emulator configuration see Giboss's [Setup Guide](https://goo.gl/PKGDn6).
-Virtual Console is not supported.
 
 ## Release
 
-[Version 0.2.6](https://github.com/Kainev/AutoSplit64/releases)
+[Latest Release](https://github.com/DaviBe92/AutoSplit64/releases)
 
 ## Features
 
@@ -49,7 +47,7 @@ Virtual Console is not supported.
 
 ## Quick Setup
 
-Download the latest release. Extract contents and run `AutoSplit64.exe`.
+Download the latest release. Extract contents and run `AutoSplit64plus.exe`.
 
 LiveSplit timer should start at 1.36 seconds.
 
@@ -58,9 +56,7 @@ LiveSplit timer should start at 1.36 seconds.
 All windows and options are accessed via the right-click menu:
 
 <p>
-  <a href="https://gitpoint.co/">
     <img alt="SM64" title="SM64" src="https://imgur.com/0VEPCco.png" width="320">
-  </a>
 </p>
 
 ### LiveSplit Server
@@ -78,9 +74,7 @@ To be able to run correctly, we must let AutoSplit 64 know where to capture.
 Make sure you have your capture software open (i.e., AmaRecTV), then open the Capture Editor (`Right-Click -> Edit Coordinates`):
 
 <p>
-  <a href="https://gitpoint.co/">
     <img alt="SM64" title="SM64" src="https://imgur.com/jzbFj05.png" width="1200">
-  </a>
 </p>
 
 Select the desired process from the `Process` drop-down and position the `Game Region` selector as shown. Ensure you are as accurate as possible for best results.
@@ -123,19 +117,14 @@ If you encounter any issues, please run through all steps below.
 
 ## Credit
 
-A big thanks to Gerardo Cervantes for open-sourcing his project!
+Gerardo Cervantes - [Star Classifier](https://github.com/gerardocervantes8/Star-Classifier-For-Mario-64)
 
-**Davi Be** - Added named pipe connection mode. Manually starting the LiveSplit Server every time is no longer necessary!
+Synozure - [AutoSplit64](https://github.com/Kainev/AutoSplit64)
 
-## Contact
+## Support
 
-Feel free to join the [discord](https://discord.gg/Q4TrSqB)!<br/>
-Bug reports may also be left on the issues page of this repository.
-
-## Donate
-
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=28PJSWKT77WLL&currency_code=USD&source=url)
+- [Join Discord](https://discord.gg/VmrQQBpPSK)
 
 ## Author
 
-Synozure
+**Davi Be**

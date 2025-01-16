@@ -1,10 +1,8 @@
-from tf_keras import backend as K
-from tf_keras.models import load_model
+import onnxruntime as ort
 import numpy as np
 import logging
 
 from .image_utils import convert_to_np
-
 
 class PredictionInfo(object):
     def __init__(self, prediction, probability):
@@ -14,19 +12,40 @@ class PredictionInfo(object):
 
 class Model(object):
     def __init__(self, model_path, width, height):
-        K.clear_session()
         try:
-            self.model = load_model(model_path)
-        except OSError as e:
-            self.model = None
-            logging.error(f"Failed to load model from {model_path}: {str(e)}")
+            # Configure ONNX Runtime session options
+            session_options = ort.SessionOptions()
+            session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            session_options.intra_op_num_threads = 4  # Adjust based on CPU cores
+            session_options.inter_op_num_threads = 1
+            session_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+            
+            # Set execution providers - CPU optimized
+            providers = [
+                ('CPUExecutionProvider', {
+                    'arena_extend_strategy': 'kSameAsRequested',
+                    'cpu_memory_arena_cfg': [1024, 1024],
+                })
+            ]
+            
+            self.model = ort.InferenceSession(
+                model_path,
+                sess_options=session_options,
+                providers=providers
+            )
+            self.input_name = self.model.get_inputs()[0].name
+            self.output_name = self.model.get_outputs()[0].name
+            
+            # Enable memory pattern optimization
+            self.model.disable_fallback()
+            
         except Exception as e:
             self.model = None
-            logging.error(f"Unexpected error loading model from {model_path}: {str(e)}")
+            logging.error(f"Failed to load model: {str(e)}")
 
-        self.width = width
-        self.height = height
-
+        self.width = int(width)
+        self.height = int(height)
+    
     def valid(self):
         if self.model:
             return True
@@ -35,8 +54,11 @@ class Model(object):
 
     def predict(self, image) -> PredictionInfo:
         try:
-            np_img = convert_to_np([image])
-            model_output = self.model.predict(np_img, verbose=0)
+            # Preprocess image
+            np_img = convert_to_np(image)
+                
+            # Run prediction
+            model_output = self.model.run([self.output_name], {self.input_name: np_img})[0]
             prediction = np.argmax(model_output)
             probability = np.max(model_output)
 

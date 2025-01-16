@@ -319,17 +319,20 @@ class CaptureEditor(QtWidgets.QDialog):
                             # Set the top bar to black
                             preview_image[0:68, 0:preview_image.shape[1]] = 0
                             
-                            actual_height = 1000
-                            # From the bottom up, check for the first pixel that is not black in the 30th column
-                            for row in range(preview_image.shape[0]-1, -1, -1):
-                            # Check if pixel is not black (sum of RGB values > 0)
-                                pixel = preview_image[row][30]
-                                if sum(pixel) > 0:
-                                    actual_height = row
-                                    break
+                            
+                            # Seems to not be captiuirng the bottom bar anymore
+                            
+                            # actual_height = 1000
+                            # # From the bottom up, check for the first pixel that is not black in the 30th column
+                            # for row in range(preview_image.shape[0]-1, -1, -1):
+                            # # Check if pixel is not black (sum of RGB values > 0)
+                            #     pixel = preview_image[row][30]
+                            #     if sum(pixel) > 0:
+                            #         actual_height = row
+                            #         break
                             
                             # Set the bottom bar to black (actual_height - 23 is the height of the game window)
-                            preview_image[actual_height-22:preview_image.shape[0], 0:preview_image.shape[1]] = 0
+                            # preview_image[actual_height-22:preview_image.shape[0], 0:preview_image.shape[1]] = 0
 
                     except:
                         pass
