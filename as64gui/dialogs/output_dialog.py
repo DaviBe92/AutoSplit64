@@ -220,6 +220,8 @@ class OutputReader(QtCore.QThread):
         while self.running:
             try:
                 prediction = as64.prediction_info.prediction
+                if prediction > 120:
+                    prediction = "None"
                 probability = as64.prediction_info.probability
             except AttributeError:
                 prediction = None

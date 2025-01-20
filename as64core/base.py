@@ -24,7 +24,11 @@ from .constants import (
     RESET_REGION,
     FADEIN_REGION,
     XCAM_REGION,
-    SPLIT_INITIAL
+    SPLIT_INITIAL,
+    MODEL_PATH,
+    MODEL_PATH_LEGACY,
+    MODEL_WIDTH,
+    MODEL_HEIGHT
 )
 
 
@@ -59,7 +63,10 @@ class Base(Thread):
         self._game_capture = GameCapture(config.get("game", "use_obs"), config.get("game", "process_name"), config.get("game", "game_region"), version)
 
         # Initialise Prediction Model
-        self._model = Model(config.get("model", "path"), config.get("model", "width"), config.get("model", "height"))
+        if config.get("model", "legacy"):
+            self._model = Model(MODEL_PATH_LEGACY, MODEL_WIDTH, MODEL_HEIGHT, True)
+        else:
+            self._model = Model(MODEL_PATH, MODEL_WIDTH, MODEL_HEIGHT, False)
 
         # Main Loop Toggle
         self._running = False
@@ -209,6 +216,8 @@ class Base(Thread):
         livesplit.disconnect(self._ls_socket)
         # Destruct the shared memory connection
         self._game_capture.close()
+        # Unload the model
+        self._model.close()
 
     def run(self):
         try:
@@ -226,8 +235,8 @@ class Base(Thread):
 
                 try:
                     self._game_capture.capture()
-                except:
-                    self._error_occurred("Unable to capture frame")
+                except Exception as e:
+                    self._error_occurred(str(e))
                 ls_index = max(livesplit.split_index(self._ls_socket), 0)
                 if ls_index != self.split_index():
                     self.set_split_index(ls_index)
@@ -323,7 +332,7 @@ class Base(Thread):
             )
             try:
                 as64.prediction_info = self._model.predict(resized_image)
-            except (AttributeError, tf.errors.InvalidArgumentError) as e:
+            except AttributeError as e:
                 self._error_occurred(f"Model prediction failed: {str(e)}")
                 return
         except cv2.error:
@@ -363,7 +372,7 @@ class Base(Thread):
             )
             try:
                 as64.prediction_info = self._model.predict(resized_image)
-            except (AttributeError, tf.errors.InvalidArgumentError) as e:
+            except AttributeError as e:
                 self._error_occurred(f"Model prediction failed: {str(e)}")
                 return
         except cv2.error:

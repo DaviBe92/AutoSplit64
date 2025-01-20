@@ -1,29 +1,15 @@
 import sys
 from threading import Thread
-import os
 import logging
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # 0=all, 1=info, 2=warnings, 3=errors
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
-
-# Filter out TensorFlow deprecation warnings
-import warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-warnings.filterwarnings('ignore', category=FutureWarning)
-
 from PyQt6 import QtCore, QtWidgets, QtGui
-
 from as64gui.app import App
-
 import as64core
 from as64core.processing import register_process, insert_global_hook, insert_global_processor_hook, ProcessorGenerator
 from as64core.route_loader import load
-
 from as64processes.standard import *
 from as64processes.xcam import *
 from as64processes.ddd import *
 from as64processes.final import *
-
 
 class AutoSplit64(QtCore.QObject):
     error = QtCore.pyqtSignal(str)

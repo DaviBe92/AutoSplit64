@@ -84,14 +84,12 @@ class GameCapture(object):
                 raise Exception(str(e))    
         else:
             if not bool(self._hwnd):
-                raise Exception("Could not capture " + self._process_name)
+                raise Exception(f"Could not find {self._process_name}\n\nMake sure the program is running and visible!")
 
     def capture(self) -> None:
         if self._use_obs:
-            try:
-                self._window_image = self._shmem.capture()
-            except Exception as e:
-                raise Exception(str(e)) 
+            self._window_image = self._shmem.capture()
+
         else:
             self._window_image = capture_window.capture(self._hwnd) 
         self._region_images = {}  

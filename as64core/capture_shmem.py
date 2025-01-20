@@ -82,7 +82,10 @@ class SharedMemoryCapture(object):
 
     def capture(self):
         """Capture a single frame from shared memory"""
-        self._update_dimensions()
+        try:
+            self._update_dimensions()
+        except Exception as e:
+            raise Exception(f"Failed to update dimensions: {str(e)}")
         
         if not self.shmem:
             raise Exception("Shared memory not initialized")

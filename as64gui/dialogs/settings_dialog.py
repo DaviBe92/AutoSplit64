@@ -175,6 +175,9 @@ class GeneralMenu(BaseMenu):
         self.on_top_lb = QtWidgets.QLabel("Always On Top:")
         self.on_top_cb = QtWidgets.QCheckBox()
 
+        self.update_check_lb = QtWidgets.QLabel("Check for Updates:")
+        self.update_check_cb = QtWidgets.QCheckBox()
+
         self.init()
 
     def init(self):
@@ -201,9 +204,16 @@ class GeneralMenu(BaseMenu):
         self.on_top_lb.setMaximumWidth(130)
         self.on_top_cb.setMaximumWidth(20)
 
+        self.update_check_lb.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.update_check_lb.setMaximumWidth(130)
+        self.update_check_cb.setMaximumWidth(20)
+
         # Add Widgets
         self.menu_layout.addWidget(self.on_top_lb, 2, 0)
         self.menu_layout.addWidget(self.on_top_cb, 2, 1)
+
+        self.menu_layout.addWidget(self.update_check_lb, 3, 0)
+        self.menu_layout.addWidget(self.update_check_cb, 3, 1)
 
         self.menu_layout.addItem(
             QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 3, 0)
@@ -256,6 +266,7 @@ class GeneralMenu(BaseMenu):
         self.override_ver_cb.setChecked(config.get("game", "override_version"))
         self.mid_run_cb.setChecked(config.get("general", "mid_run_start_enabled"))
         self.on_top_cb.setChecked(config.get("general", "on_top"))
+        self.update_check_cb.setChecked(config.get("general", "update_check"))
 
         if config.get("game", "version") == "US":
             self.override_ver_combo.setCurrentIndex(1)
@@ -270,7 +281,7 @@ class GeneralMenu(BaseMenu):
         config.set_key("game", "version", self.override_ver_combo.itemText(self.override_ver_combo.currentIndex()))
         config.set_key("general", "operation_mode", self.mode_combo.currentIndex())
         config.set_key("general", "on_top", self.on_top_cb.isChecked())
-
+        config.set_key("general", "update_check", self.update_check_cb.isChecked())
 
 class ThresholdsMenu(BaseMenu):
     def __init__(self, parent=None):
@@ -857,13 +868,8 @@ class AdvancedMenu(BaseMenu):
         self.fadeout_delay_le = QtWidgets.QLineEdit("")
 
         self.model_lb = QtWidgets.QLabel("Detection Model:")
-        self.model_le = QtWidgets.QLineEdit("")
-        self.model_btn = QtWidgets.QPushButton("Browse")
-
-        self.model_width_lb = QtWidgets.QLabel("Model Width:")
-        self.model_width_le = QtWidgets.QLineEdit()
-        self.model_height_lb = QtWidgets.QLabel("Model Height:")
-        self.model_height_le = QtWidgets.QLineEdit()
+        self.model_combo = QtWidgets.QComboBox()
+        self.model_combo.addItems(["AS64+ Star Predictor", "AS64 Legacy Model"])
 
         self.int_validator = QtGui.QIntValidator()
 
@@ -896,16 +902,8 @@ class AdvancedMenu(BaseMenu):
         self.fadeout_delay_le.setValidator(self.double_validator)
 
         # configure model section
-        self.model_lb.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.model_width_lb.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.model_height_lb.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
-        self.model_le.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.model_width_le.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.model_height_le.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-
-        self.model_width_le.setValidator(self.int_validator)
-        self.model_height_le.setValidator(self.int_validator)
+        self.model_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self.file_select_offset_sb.setMaximumWidth(50)
         self.file_select_offset_sb.setMinimum(-35)
@@ -915,9 +913,6 @@ class AdvancedMenu(BaseMenu):
 
         # Add Widgets
         self.menu_layout.addItem(QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 4, 0)
-
-        # self.menu_layout.addWidget(self.restart_delay_lb, 5, 0)
-        # self.menu_layout.addWidget(self.restart_delay_sb, 5, 1, 1, 2)
 
         self.menu_layout.addWidget(self.file_select_offset_lb, 6, 0)
         self.menu_layout.addWidget(self.file_select_offset_sb, 6, 1, 1, 2)
@@ -949,20 +944,13 @@ class AdvancedMenu(BaseMenu):
         self.menu_layout.addItem(QtWidgets.QSpacerItem(10, 5, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 27, 0)
 
         self.menu_layout.addWidget(self.model_lb, 28, 0)
-        self.menu_layout.addWidget(self.model_le, 28, 1, 1, 3)
-        self.menu_layout.addWidget(self.model_btn, 28, 4)
-
-        self.menu_layout.addWidget(self.model_width_lb, 29, 0)
-        self.menu_layout.addWidget(self.model_width_le, 29, 1)
-        self.menu_layout.addWidget(self.model_height_lb, 29, 2)
-        self.menu_layout.addWidget(self.model_height_le, 29, 3)
+        self.menu_layout.addWidget(self.model_combo, 28, 1, 1, 3)
 
         self.menu_layout.addItem(QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding), 30, 0)
 
         # Connections
         self.reset_one_btn.clicked.connect(self.open_reset_one)
         self.reset_two_btn.clicked.connect(self.open_reset_two)
-        self.model_btn.clicked.connect(self.open_model_dialog)
 
         self.load_preferences()
 
@@ -973,9 +961,8 @@ class AdvancedMenu(BaseMenu):
         self.reset_two_le.setText(str(config.get('advanced', 'reset_frame_two')))
         self.star_delay_le.setText(str(config.get('advanced', 'star_process_frame_rate')))
         self.fadeout_delay_le.setText(str(config.get('advanced', 'fadeout_process_frame_rate')))
-        self.model_le.setText(config.get('model', 'path'))
-        self.model_width_le.setText(str(config.get('model', 'width')))
-        self.model_height_le.setText(str(config.get('model', 'height')))
+        
+        self.model_combo.setCurrentIndex(0 if not config.get('model', 'legacy') else 1)
 
     def update_preferences(self):
         config.set_key('advanced', 'restart_frame_offset', self.restart_delay_sb.value())
@@ -984,9 +971,8 @@ class AdvancedMenu(BaseMenu):
         config.set_key('advanced', 'reset_frame_two', resource_utils.abs_to_rel(self.reset_two_le.text()))
         config.set_key('advanced', 'star_process_frame_rate', float(self.star_delay_le.text()))
         config.set_key('advanced', 'fadeout_process_frame_rate', float(self.fadeout_delay_le.text()))
-        config.set_key('model', 'path', self.model_le.text())
-        config.set_key('model', 'width', int(self.model_width_le.text()))
-        config.set_key('model', 'height', int(self.model_height_le.text()))
+        
+        config.set_key('model', 'legacy', self.model_combo.currentIndex() == 1)
 
     def open_reset_one(self):
         file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Reset Frame One", "")
@@ -999,9 +985,3 @@ class AdvancedMenu(BaseMenu):
 
         if file_name:
             self.reset_two_le.setText(file_name)
-
-    def open_model_dialog(self):
-        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Detection Model", "", "Model (*.hdf5)")
-
-        if file_name:
-            self.model_le.setText(file_name)

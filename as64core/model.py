@@ -4,6 +4,10 @@ import logging
 
 from .image_utils import convert_to_np
 
+def softmax(x):
+    exp_x = np.exp(x - np.max(x))  # Subtract max for numerical stability
+    return exp_x / exp_x.sum()
+
 class PredictionInfo(object):
     def __init__(self, prediction, probability):
         self.prediction = prediction
@@ -11,7 +15,7 @@ class PredictionInfo(object):
 
 
 class Model(object):
-    def __init__(self, model_path, width, height):
+    def __init__(self, model_path, width, height, legacy=False):
         try:
             # Configure ONNX Runtime session options
             session_options = ort.SessionOptions()
@@ -45,6 +49,7 @@ class Model(object):
 
         self.width = int(width)
         self.height = int(height)
+        self.legacy = legacy
     
     def valid(self):
         if self.model:
@@ -59,10 +64,27 @@ class Model(object):
                 
             # Run prediction
             model_output = self.model.run([self.output_name], {self.input_name: np_img})[0]
-            prediction = np.argmax(model_output)
-            probability = np.max(model_output)
+            
+            if self.legacy:
+                # Legacy model output. Legacy models already output softmax probabilities
+                prediction = np.argmax(model_output)
+                probability = np.max(model_output)
+            else:            
+                probabilities = softmax(model_output[0])
+                prediction = np.argmax(probabilities)
+                probability = np.max(probabilities)
 
             return PredictionInfo(prediction, probability)
         except Exception as e:
             logging.error(f"Prediction failed: {str(e)}")
             return PredictionInfo(0, 0.0)
+
+    def close(self):
+        if self.model:
+            try:
+                # Free ONNX runtime resources
+                del self.model._sess
+                del self.model
+                self.model = None
+            except:
+                pass

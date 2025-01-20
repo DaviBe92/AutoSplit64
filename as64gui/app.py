@@ -1,16 +1,15 @@
 import os
-from threading import Thread
+import logging
 from functools import partial
 import re
-
+import requests
+import json
 from PyQt6 import QtCore, QtGui, QtWidgets
-
 from as64core import route_loader, config
 from as64core.resource_utils import base_path, resource_path, absolute_path, rel_to_abs
 from . import constants
 from .widgets import PictureButton, StateButton, StarCountDisplay, SplitListWidget
 from .dialogs import AboutDialog, CaptureEditor, SettingsDialog, RouteEditor, ResetGeneratorDialog, OutputDialog
-
 
 class App(QtWidgets.QMainWindow):
     start = QtCore.pyqtSignal()
@@ -43,6 +42,8 @@ class App(QtWidgets.QMainWindow):
                                       pixmap_pressed=QtGui.QPixmap(base_path(constants.STAR_HOVER_PATH)),
                                       pixmap_hover=QtGui.QPixmap(base_path(constants.STAR_HOVER_PATH)),
                                       parent=self.central_widget)
+        self.start_btn_initial_x = 206
+        self.start_btn_initial_y = 180
         self.start_btn = StateButton(self.start_pixmap, self.start_pixmap, parent=self.central_widget)
         self.split_list = SplitListWidget(self.central_widget)
 
@@ -68,6 +69,9 @@ class App(QtWidgets.QMainWindow):
 
         self.initialize()
         self.show()
+        
+        if config.get("general", "update_check"):
+            self.update_check()
         
         # Handle splash screen closure
         try:
@@ -105,7 +109,7 @@ class App(QtWidgets.QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         # Configure Other Widgets
-        self.star_btn.move(250, 68)
+        self.star_btn.move(242, 35)
 
         self.star_count.setFixedWidth(150)
         self.star_count.move(197, 115)
@@ -113,13 +117,17 @@ class App(QtWidgets.QMainWindow):
         self.star_count.star_count = "-"
         self.star_count.split_star = "-"
 
-        self.start_btn.move(206, 200)
-        self.start_btn.setFont(self.button_font)
-        self.start_btn.setTextColour(QtGui.QColor(225, 227, 230))
-        self.start_btn.add_state("start", self.start_pixmap, "Start")
-        self.start_btn.add_state("stop", self.stop_pixmap, "Stop")
-        self.start_btn.add_state("init", self.init_pixmap, "Initializing..")
+        self.start_btn.move(self.start_btn_initial_x, self.start_btn_initial_y)
+        # self.start_btn.setFont(self.button_font)
+        # self.start_btn.setStyleSheet("font-weight: bold; color: black; font-size: 32px;")
+        self.start_btn.add_state("start", self.start_pixmap, "")
+        self.start_btn.add_state("stop", self.stop_pixmap, "")
+        self.start_btn.add_state("init", self.init_pixmap, "")
         self.start_btn.set_state("start")
+        
+        # Add hover effects
+        self.start_btn.enterEvent = lambda e: self._on_start_btn_hover(True)
+        self.start_btn.leaveEvent = lambda e: self._on_start_btn_hover(False)
 
         self.split_list.setFont(self.button_font)
         self.split_list.setFixedSize(183, self.height)
@@ -353,6 +361,47 @@ class App(QtWidgets.QMainWindow):
         msg.setText(message)
         msg.exec()
 
+    def display_update_message(self, version):
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Update Available")
+        msg.setText(f"A new version of AutoSplit 64+ is available!\n\nCurrent Version: {constants.VERSION}\nLatest Version: {version}")
+        
+        # Create custom icon label
+        icon_label = QtWidgets.QLabel()
+        pixmap = QtGui.QPixmap(base_path(constants.STAR_HOVER_PATH))
+        icon_label.setPixmap(pixmap)
+        layout = msg.layout()
+        layout.addWidget(icon_label, 0, 0, 1, 1, QtCore.Qt.AlignmentFlag.AlignCenter)
+        msg.addButton("Ignore", QtWidgets.QMessageBox.ButtonRole.RejectRole)
+        download_btn = msg.addButton("Download", QtWidgets.QMessageBox.ButtonRole.AcceptRole)
+        
+        def on_button_clicked(button):
+            if button == download_btn:
+                QtGui.QDesktopServices.openUrl(QtCore.QUrl(f"https://github.com/{constants.GITHUB_REPO}/releases/latest"))
+
+        msg.buttonClicked.connect(on_button_clicked)
+        msg.exec()
+
+    def parse_version(self, version_str):
+        version = version_str.lstrip('v')
+        return [int(x) for x in version.split('.')]
+
+    def update_check(self):
+
+        try:
+            response = requests.get(f"https://api.github.com/repos/{constants.GITHUB_REPO}/releases/latest")
+            response.raise_for_status()
+            data = json.loads(response.text)
+            latest_version = data["tag_name"]
+
+            if self.parse_version(latest_version) > self.parse_version(constants.VERSION):
+                self.display_update_message(latest_version)
+            else:
+                return None
+        except Exception as e:
+            logging.error(f"Update check failed: {str(e)}")
+            return None
+
     def _load_route_dir(self):
         self._routes = {}
 
@@ -412,3 +461,19 @@ class App(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         self.close()
         event.accept()
+
+    def _on_start_btn_hover(self, hovering):
+        if hovering:
+            scale = 1.1
+        else:
+            scale = 1.0
+        
+        # Resize button
+        new_width = int(self.start_pixmap.width() * scale)
+        new_height = int(self.start_pixmap.height() * scale)
+        self.start_btn.setFixedSize(new_width, new_height)
+        
+        # Move button relative to its initial position
+        new_x = self.start_btn_initial_x - (new_width - self.start_pixmap.width()) // 2
+        new_y = self.start_btn_initial_y - (new_height - self.start_pixmap.height()) // 2
+        self.start_btn.move(new_x, new_y)
