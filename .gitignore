@@ -1,4 +1,11 @@
 # Created by .ignore support plugin (hsz.mobi)
+# Exclude obs-plugin build files
+obs-plugin/cmake/.CMakeBuildNumber
+*.lock.json
+obs-plugin/build_x64/
+obs-plugin/.deps/
+.vscode
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -47,7 +47,7 @@ AutoSplit64+ is an enhanced fork of [AutoSplit64](https://github.com/Kainev/Auto
 
 All windows and options are accessed via the right-click menu:
 
-![Interface](repo\menu_screen.png)
+![Interface](repo/menu_screen.png)
 
 ## Usage Guide
 
@@ -76,7 +76,7 @@ The AutoSplit64+ Grabber OBS plugin sends the gameplay directly to AutoSplit64+ 
 - Copy the plugin file `as64plus-grabber.dll` located in `AutpSplit64plus/OBS-Plugin` to your OBS plugin folder
 - Usually located in `C:\Program Files\obs-studio\obs-plugins\64bit`
 - Open OBS
-![OBS Plugin](repo\capture_screen_obs.png)
+![OBS Plugin](repo/capture_screen_obs.png)
 
 - Check `Use OBS Plugin`
 - Pressing `Capture Screen` will update the shown frame.
@@ -90,7 +90,7 @@ If the region was not detected poperly, adjust the region manually and ensure it
 #### Window Capture
 Window Capture will take a screenshot of the selected programm 30 times/second.
  
-![Window Capture](repo\capture_screen_window.png)
+![Window Capture](repo/capture_screen_window.png)
 
 - Uncheck `Use OBS Plugin`
 - Select the desired process from the `Process` drop-down.
@@ -148,4 +148,10 @@ If you encounter any issues, please run through all steps below.
 Developed with ❤️ by [Davi Be](https://github.com/DaviBe92)
 
 Synozure - [AutoSplit64](https://github.com/Kainev/AutoSplit64)
+
 Gerardo Cervantes - [Star Classifier](https://github.com/gerardocervantes8/Star-Classifier-For-Mario-64)
+
+#### TODO
+
+- Autostart detecting
+- RetroSpy integration for reset detection
