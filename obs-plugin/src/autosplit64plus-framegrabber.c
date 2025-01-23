@@ -26,7 +26,10 @@ struct filter_data {
 	LPCTSTR pBuf;            // Pointer to the mapped view of the shared memory
 	uint32_t frame_counter;  // Frame counter for synchronization
 	bool shmem_valid;        // Track if shared memory is valid
+	bool is_valid;           // Track if this is a valid instance
 };
+
+static bool filter_instance_exists = false;
 
 /**
  * Returns the display name of the filter
@@ -50,7 +53,6 @@ static const char *filter_name(void *unused)
  */
 static void *filter_create(obs_data_t *settings, obs_source_t *source)
 {
-	// Create the filter data
 	struct filter_data *filter = bzalloc(sizeof(struct filter_data));
 	if (!filter) {
 		blog(LOG_ERROR, "Failed to allocate filter data");
@@ -58,6 +60,14 @@ static void *filter_create(obs_data_t *settings, obs_source_t *source)
 	}
 
 	filter->context = source;
+	filter->is_valid = !filter_instance_exists;
+	
+	if (!filter->is_valid) {
+		blog(LOG_WARNING, "AS64+ Frame grabber: Only one instance allowed");
+		return filter; // Return filter anyway so properties can show error
+	}
+
+	filter_instance_exists = true;
 	filter->render = gs_texrender_create(GS_BGRA, GS_ZS_NONE);
 	if (!filter->render) {
 		blog(LOG_ERROR, "Failed to create texture renderer");
@@ -69,34 +79,6 @@ static void *filter_create(obs_data_t *settings, obs_source_t *source)
 	filter->shmem_valid = false;
 
 	return filter;
-}
-
-/**
- * Destroys the filter data and releases all associated resources.
- * This function is called when the filter is destroyed.
- *
- * @param data Pointer to the filter data to be destroyed.
- */
-static void filter_destroy(void *data)
-{
-	struct filter_data *filter = data;
-	if (filter) {
-		if (filter->render)
-			gs_texrender_destroy(filter->render);
-		if (filter->staging)
-			gs_stagesurface_destroy(filter->staging);
-		if (filter->image_data)
-			bfree(filter->image_data);
-		// Unmap and close the shared memory
-		if (filter->pBuf)
-			UnmapViewOfFile(filter->pBuf);
-		if (CloseHandle(filter->shmem)) {
-			blog(LOG_INFO, "Closed the shared memory");
-		} else {
-			blog(LOG_ERROR, "Failed to close the shared memory");
-		}
-		bfree(filter);
-	}
 }
 
 /**
@@ -119,8 +101,17 @@ static bool discord_button_clicked(obs_properties_t *props, obs_property_t *prop
 
 static obs_properties_t *filter_properties(void *data)
 {
-	UNUSED_PARAMETER(data);
+	struct filter_data *filter = data;
 	obs_properties_t *props = obs_properties_create();
+
+	if (!filter || !filter->is_valid) {
+		obs_properties_add_text(
+			props,
+			"error_message",
+			"❌ Error: Only one AS64+ Frame Grabber instance allowed",
+			OBS_TEXT_INFO);
+		return props;
+	}
 
 	// Info group
 	obs_properties_add_text(props, "plugin_description", "AutoSplit64+ Frame Grabber", OBS_TEXT_INFO);
@@ -142,24 +133,6 @@ static obs_properties_t *filter_properties(void *data)
 }
 
 /**
- * Attempts to recover the shared memory connection
- *
- * @param filter Pointer to the filter data
- */
-static void try_recover_shmem(struct filter_data *filter)
-{
-	if (filter->pBuf) {
-		UnmapViewOfFile(filter->pBuf);
-		filter->pBuf = NULL;
-	}
-	if (filter->shmem) {
-		CloseHandle(filter->shmem);
-		filter->shmem = NULL;
-	}
-	filter->shmem_valid = false;
-}
-
-/**
  * Opens shared memory for the given dimensions.
  *
  * @param filter Pointer to the filter data
@@ -173,7 +146,6 @@ static bool open_shmem(struct filter_data *filter, uint32_t width, uint32_t heig
 		// Already open, no need to recreate
 		return true;
 	}
-	try_recover_shmem(filter);
 	filter->shmem = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 16 + width * height * 4,
 					  TEXT("as64_grabber"));
 	if (filter->shmem) {
@@ -193,15 +165,42 @@ static bool open_shmem(struct filter_data *filter, uint32_t width, uint32_t heig
 	return false;
 }
 
+static bool close_shmem(struct filter_data *filter)
+{
+	if (filter->pBuf) {
+		// Signal to readers that we're closing by setting dimensions to -1
+		uint32_t *header = (uint32_t *)filter->pBuf;
+		header[0] = -1;
+		header[1] = -1;
+		header[2] = -1;
+		header[3] = 0;
+
+		FlushViewOfFile(filter->pBuf, 16);
+		UnmapViewOfFile(filter->pBuf);
+		filter->pBuf = NULL;
+	}
+
+	if (filter->shmem) {
+		if (CloseHandle(filter->shmem)) {
+			blog(LOG_INFO, "Closed the shared memory");
+		} else {
+			blog(LOG_ERROR, "Failed to close the shared memory: %lu", GetLastError());
+		}
+		filter->shmem = NULL;
+	}
+	filter->shmem_valid = false;
+	return true;
+}
+
 /**
- * Handles shared memory mapping and data transfer.
+ * Copys the data to the shared memory.
  *
  * @param filter Pointer to the filter data
  * @param width Frame width
  * @param height Frame height
  * @return True if data was successfully transferred, false otherwise
  */
-static bool handle_shared_memory(struct filter_data *filter, uint32_t width, uint32_t height)
+static bool copy_to_shared_memory(struct filter_data *filter, uint32_t width, uint32_t height)
 {
 	if (!filter->shmem_valid) {
 		if (!open_shmem(filter, width, height)) {
@@ -237,8 +236,10 @@ static bool handle_shared_memory(struct filter_data *filter, uint32_t width, uin
 static void filter_render(void *data, gs_effect_t *effect)
 {
 	struct filter_data *filter = data;
-	if (!filter)
+	if (!filter || !filter->is_valid) {
+		obs_source_skip_video_filter(filter->context);
 		return;
+	}
 
 	obs_source_t *target = obs_filter_get_target(filter->context);
 	if (!target) {
@@ -254,7 +255,10 @@ static void filter_render(void *data, gs_effect_t *effect)
 		return;
 	}
 
+	// Check if the frame dimensions have changed
 	if (width != filter->width || height != filter->height) {
+		// Close shared memory and recreate it with new dimensions
+		close_shmem(filter);
 		filter->width = width;
 		filter->height = height;
 		if (filter->staging)
@@ -304,7 +308,7 @@ static void filter_render(void *data, gs_effect_t *effect)
 			gs_stagesurface_unmap(filter->staging);
 		}
 
-		handle_shared_memory(filter, width, height);
+		copy_to_shared_memory(filter, width, height);
 	}
 
 	if (!effect)
@@ -315,6 +319,27 @@ static void filter_render(void *data, gs_effect_t *effect)
 		gs_effect_set_texture(image, gs_texrender_get_texture(filter->render));
 		while (gs_effect_loop(effect, "Draw"))
 			gs_draw_sprite(gs_texrender_get_texture(filter->render), 0, width, height);
+	}
+}
+
+/**
+ * Destroys the filter data and releases all associated resources.
+ * This function is called when the filter is destroyed.
+ *
+ * @param data Pointer to the filter data to be destroyed.
+ */
+static void filter_destroy(void *data)
+{
+	struct filter_data *filter = data;
+	if (filter) {
+		if (filter->render)
+			gs_texrender_destroy(filter->render);
+		if (filter->staging)
+			gs_stagesurface_destroy(filter->staging);
+		if (filter->image_data)
+			bfree(filter->image_data);
+		close_shmem(filter);
+		bfree(filter);
 	}
 }
 

@@ -4,7 +4,10 @@
 </p>
 
 ## Introduction
-AutoSplit64+ is an enhanced fork of [AutoSplit64](https://github.com/Kainev/AutoSplit64), providing automated splitting for Super Mario 64 speedruns on console. It analyzes captured gameplay to control LiveSplit timer events automatically.
+AutoSplit64+ is an enhanced fork of [AutoSplit64](https://github.com/Kainev/AutoSplit64), providing automated splitting for Super Mario 64 speedruns on console. 
+It analyzes captured gameplay to control LiveSplit timer events automatically. 
+
+The project's main objectives are to simplify setup and enhance reliability.
 
 ## Key Features
 ### Core Functionality
@@ -22,7 +25,7 @@ AutoSplit64+ is an enhanced fork of [AutoSplit64](https://github.com/Kainev/Auto
   - AmaRecTV is no longer required
 - **Streamlined Setup**
   - Automatic LiveSplit Server connection
-  - No manual server configuration needed
+  - No manual server starting needed
 - **Improved Recognition**
   - Enhanced star detection accuracy
   - Resilient to inaccurate capture region 
@@ -73,7 +76,7 @@ The AutoSplit64+ Grabber OBS plugin sends the gameplay directly to AutoSplit64+ 
 
 ##### Install Plugin:
 - Close OBS
-- Copy the plugin file `as64plus-grabber.dll` located in `AutpSplit64plus/OBS-Plugin` to your OBS plugin folder
+- Copy the plugin file `autosplit64plus-framegrabber.dll` located in `AutpSplit64plus/OBS-Plugin` to your OBS plugin folder
 - Usually located in `C:\Program Files\obs-studio\obs-plugins\64bit`
 - Open OBS
 ![OBS Plugin](repo/capture_screen_obs.png)

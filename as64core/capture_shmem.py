@@ -90,6 +90,9 @@ class SharedMemoryCapture(object):
         if not self.shmem:
             raise Exception("Shared memory not initialized")
         
+        if self.width == 4294967295 and self.height == 4294967295 and self.linesize == 4294967295:
+            raise Exception("OBS closed the connection")
+        
         if self.width <= 0 or self.height <= 0 or self.shmem_size <= 16:
             raise Exception("Invalid dimensions or shared memory size")
 
@@ -104,6 +107,7 @@ class SharedMemoryCapture(object):
             frame = np.frombuffer(data, dtype=np.uint8, offset=16)
             expected_size = self.height * self.width * 4
             if len(frame) != expected_size:
+                print(f"Width: {self.width}, Height: {self.height}, Linesize: {self.linesize}")
                 raise Exception(f"Data size mismatch: got {len(frame)}, expected {expected_size}")
             
             return frame.reshape(self.height, self.width, 4)[:,:,:3]

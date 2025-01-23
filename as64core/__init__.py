@@ -198,6 +198,8 @@ def save() -> None:
 #
 # Listeners
 #
+def set_start_listener(listener) -> None:
+    pass
 
 def set_update_listener(listener) -> None:
     pass

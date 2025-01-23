@@ -1,4 +1,5 @@
 import sys
+import os
 from threading import Thread
 import logging
 from PyQt6 import QtCore, QtWidgets, QtGui
@@ -29,6 +30,11 @@ class AutoSplit64(QtCore.QObject):
 
     def start(self):
         as64core.init()
+        
+        
+        if not os.path.exists(resource_path(config.get("advanced", "reset_frame_one"))) or not os.path.exists(resource_path(config.get("advanced", "reset_frame_two"))):
+            self.on_error("Reset template files are missing!\n\nPlease generate reset templates first.")
+            return
 
         register_process("WAIT", ProcessWait())
         register_process("RUN_START", ProcessRunStart())
@@ -89,13 +95,15 @@ class AutoSplit64(QtCore.QObject):
 
         as64core.set_update_listener(self.on_update)
         as64core.set_error_listener(self.on_error)
+        as64core.set_start_listener(self.on_start)
 
         as64core.start()
 
-        self.app.set_started(True)
-
     def stop(self):
         as64core.stop()
+
+    def on_start(self):
+        self.app.set_started(True)
 
     def on_update(self, index, star_count, split_star):
         self.app.update_display(index, star_count, split_star)

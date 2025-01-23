@@ -43,8 +43,8 @@ class Base(Thread):
         # Load config
         config.load_config()
 
-        # Connect to LiveSplit
-        self._ls_socket = livesplit.connect()
+        # Initialize LiveSplit Connection
+        self._ls_socket = None
 
         # Load Route
         self._route = load_route(config.get("route", "path"))
@@ -164,6 +164,7 @@ class Base(Thread):
         as64.register_split_processor = self.register_split_processor
         as64.set_update_listener = self.set_update_listener
         as64.set_error_listener = self.set_error_listener
+        as64.set_start_listener = self.set_start_listener
         as64.force_update = self._update_occurred
         as64.split = self.split
         as64.reset = self.reset
@@ -177,6 +178,9 @@ class Base(Thread):
 
     def validity_check(self):
 
+        if not livesplit.check_connection(self._ls_socket):
+            self._error_occurred("Could not connect to LiveSplit.\nIs LiveSplit running?\nIf Connection mode is TCP, ensure the LiveSplit Server is started.")
+            return False
         
         try:
             self._game_capture.is_valid()
@@ -194,10 +198,6 @@ class Base(Thread):
 
         if current_capture_size[0] != config.get("game", "capture_size")[0] or current_capture_size[1] != config.get("game", "capture_size")[1]:
             self._error_occurred("Capture windows dimensions have changed since last configuring coordinates. Please reconfigure capture coordinates and generate reset templates.")
-            return False
-
-        if not livesplit.check_connection(self._ls_socket):
-            self._error_occurred("Could not connect to LiveSplit.\nIs LiveSplit running?\nIf Connection mode is TCP, ensure the LiveSplit Server is started.")
             return False
 
         if not self._route:
@@ -222,14 +222,19 @@ class Base(Thread):
     def run(self):
         try:
             self._running = True
+            
+            self._ls_socket = livesplit.connect()
 
             valid = self.validity_check()
 
             if not valid:
                 self.stop()
+            else:
+                self._start_occurred()
+            
 
             self._processor_switch._current_processor = self._current_split.split_type
-
+            
             while self._running:
                 as64.current_time = time.time()
 
@@ -555,6 +560,15 @@ class Base(Thread):
     #
     # HELPER FUNCTIONS
     #
+    def set_start_listener(self, listener):
+        self._start_listener = listener
+
+    def _start_occurred(self):
+        try:
+            self._start_listener()
+        except AttributeError:
+            pass
+
     def set_update_listener(self, listener):
         self._update_listener = listener
 

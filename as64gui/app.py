@@ -17,6 +17,7 @@ class App(QtWidgets.QMainWindow):
     closed = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
+        self.autostarter_active = False
         super().__init__(parent=parent)
 
         # Window Properties
@@ -79,6 +80,9 @@ class App(QtWidgets.QMainWindow):
             pyi_splash.close()
         except (ImportError, ModuleNotFoundError):
             pass
+        
+        QtCore.QTimer.singleShot(100, self.autostart)
+        
 
     def set_always_on_top(self, on_top):
         if on_top:
@@ -156,21 +160,36 @@ class App(QtWidgets.QMainWindow):
         self.star_count.star_count = current_star
         self.star_count.split_star = split_star
 
+    def autostart(self):
+        if config.get("general", "auto_start"):
+            self.autostarter_active = True
+            self.start_btn.set_state("init")
+            
+            # While autostarter is active, try every 2000ms to start the timer
+            self.counter = 0
+            def try_start():
+                if self.autostarter_active:
+                    self.start.emit()
+                    QtCore.QTimer.singleShot(2000, try_start)
+            try_start()
+            # Quit the autostarter after trying for 10 seconds
+            def quit_autostarter():
+                if self.autostarter_active:
+                    self.autostarter_active = False
+                    self.start_btn.set_state("start")
+                    self.stop.emit()
+                    self.display_error_message("Failed to auto start timer.", "AutoStart Error")
+            QtCore.QTimer.singleShot(60000, quit_autostarter)
+
     def start_clicked(self):
-        if self.start_btn.get_state() == "stop":
+        if self.start_btn.get_state() == "stop" or self.start_btn.get_state() == "init":
+            self.autostarter_active = False
             self.start_btn.set_state("start")
             self.split_list.set_selected_index(0)
             self.star_count.star_count = self.route.initial_star
             self.star_count.split_star = self.route.splits[0].star_count
             self.stop.emit()
         elif self.start_btn.get_state() == "start":
-            # Check reset template files
-            reset_frame_one = resource_path(config.get("advanced", "reset_frame_one"))
-            reset_frame_two = resource_path(config.get("advanced", "reset_frame_two"))
-        
-            if not os.path.exists(reset_frame_one) or not os.path.exists(reset_frame_two):
-                self.display_error_message("Reset template files are missing!\n\nPlease generate reset templates first.")
-                return
             
             self.start_btn.set_state("init")
             self.start.emit()
@@ -178,6 +197,9 @@ class App(QtWidgets.QMainWindow):
     def set_started(self, started):
         if started:
             self.start_btn.set_state("stop")
+            self.autostarter_active = False
+        elif self.autostarter_active:
+            pass
         else:
             self.start_btn.set_state("start")
             # TODO: Set split list index to 0?
@@ -355,6 +377,8 @@ class App(QtWidgets.QMainWindow):
         :param message: Warning/error message
         :return:
         """
+        if self.autostarter_active:
+            return
         msg = QtWidgets.QMessageBox(self)
         msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
         msg.setWindowTitle(title)
