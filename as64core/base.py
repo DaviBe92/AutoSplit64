@@ -240,18 +240,20 @@ class Base(Thread):
 
                 try:
                     self._game_capture.capture()
+
+                    ls_index = max(livesplit.split_index(self._ls_socket), 0)
+               
+                    if ls_index != self.split_index():
+                        self.set_split_index(ls_index)
+
+                    self.analyze_fade_status()
+                    if self._make_predictions:
+                        self.analyze_star_count()
+
+                    if self._count_xcams:
+                        self.analyze_xcam_status()
                 except Exception as e:
                     self._error_occurred(str(e))
-                ls_index = max(livesplit.split_index(self._ls_socket), 0)
-                if ls_index != self.split_index():
-                    self.set_split_index(ls_index)
-
-                self.analyze_fade_status()
-                if self._make_predictions:
-                    self.analyze_star_count()
-
-                if self._count_xcams:
-                    self.analyze_xcam_status()
 
                 try:
                     if self._in_game:

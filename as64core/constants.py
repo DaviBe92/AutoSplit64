@@ -50,7 +50,7 @@ POWER_REGION_RATIO = [246, 48, 52, 46]
 
 XCAM_REGION_RATIO = [555, 403, 23, 23]
 
-MODEL_PATH = "resources\model\star_predictor.onnx"
-MODEL_PATH_LEGACY = "resources\model\default_model.onnx"
+MODEL_PATH = "resources/model/star_predictor.onnx"
+MODEL_PATH_LEGACY = "resources/model/default_model.onnx"
 MODEL_WIDTH = 67
 MODEL_HEIGHT = 40

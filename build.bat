@@ -16,3 +16,4 @@ xcopy /E /I /Y resources dist\AutoSplit64plus\resources
 xcopy /E /I /Y routes dist\AutoSplit64plus\routes
 xcopy /E /I /Y templates dist\AutoSplit64plus\templates
 xcopy /Y defaults.ini dist\AutoSplit64plus\
+xcopy /Y obs-plugin\build_x64\RelWithDebInfo\autosplit64plus-framegrabber.dll dist\AutoSplit64plus\obs-plugin\

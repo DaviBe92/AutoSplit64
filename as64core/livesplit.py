@@ -64,8 +64,10 @@ def send(ls_socket, command) -> None:
     # If it is a pipe:
     else:
         # Send the command to the pipe
-        win32file.WriteFile(ls_socket, command.encode('utf-8'))
-
+        try:
+            win32file.WriteFile(ls_socket, command.encode('utf-8'))
+        except:
+            raise Exception("LiveSplit connection lost")
 
 def split(ls_socket) -> None:
     send(ls_socket, "startorsplit\r\n")
@@ -123,7 +125,10 @@ def split_index(ls_socket):
             if time.time() - start_time > timeout:
                 return False
             # Peek at the pipe to see if there is data as it is non-blocking
-            peek_data, available , _ = win32pipe.PeekNamedPipe(ls_socket, 1000)
+            try:
+                peek_data, available , _ = win32pipe.PeekNamedPipe(ls_socket, 1000)
+            except:
+                raise Exception("LiveSplit connection lost")
             # If there is data available:
             if available > 0:
                 # Read the data from the pipe
