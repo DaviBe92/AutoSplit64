@@ -55,8 +55,7 @@ class ProcessFinalStarSpawn(Process):
     def execute(self):
         if as64core.fade_status in (as64core.FADEOUT_PARTIAL, as64core.FADEOUT_COMPLETE):
             return self.signals["FADEOUT"]
-
-        if self._star_visible() and self.loop_time() > 30:
+        if self._star_visible() and self.loop_time() > 20:
             if self._looping_iteration == len(self._iteration_value):
                 print("Star Spawned")
                 return self.signals["SPAWNED"]

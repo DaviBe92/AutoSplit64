@@ -38,16 +38,16 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/autosplit64plus-framegrabber.c)
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
 
-set_target_properties(
-  ${CMAKE_PROJECT_NAME}
-  PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "D:/Projects/Programming/OBS-Studio/obs-plugins/64bit"
-)
+# set_target_properties(
+#   ${CMAKE_PROJECT_NAME}
+#   PROPERTIES
+#     LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "D:/Projects/Programming/OBS-Studio/obs-plugins/64bit"
+# )
 
-add_custom_command(
-  TARGET ${CMAKE_PROJECT_NAME}
-  POST_BUILD
-  COMMAND cmd /c start /B "" "D:/Projects/Programming/OBS-Studio/bin/64bit/obs64.exe" >NUL 2>&1
-  WORKING_DIRECTORY "D:/Projects/Programming/OBS-Studio/bin/64bit"
-  COMMENT "Starting OBS after build"
-)
+# add_custom_command(
+#   TARGET ${CMAKE_PROJECT_NAME}
+#   POST_BUILD
+#   COMMAND cmd /c start /B "" "D:/Projects/Programming/OBS-Studio/bin/64bit/obs64.exe" >NUL 2>&1
+#   WORKING_DIRECTORY "D:/Projects/Programming/OBS-Studio/bin/64bit"
+#   COMMENT "Starting OBS after build"
+# )

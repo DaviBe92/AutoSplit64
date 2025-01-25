@@ -26,6 +26,10 @@ The project's main objectives are to simplify setup and enhance reliability.
 - **Streamlined Setup**
   - Automatic LiveSplit Server connection
   - No manual server starting needed
+- **Autostart Split Detection**
+  - Automatically start Split Detection when AS64+ is launched
+  - Tries to connect to LiveSplit and start Game Capture for 5 minutes
+  - Once setup, AS64+ can run entirely in the background
 - **Improved Recognition**
   - Enhanced star detection accuracy
   - Resilient to inaccurate capture region 
@@ -68,8 +72,6 @@ There are 2 options to capture the game:
 - **OBS Plugin** (*preffered*)
 - **Window Capture** 
 
-Make sure you have your capture software open (i.e., OBS, AmaRecTV), then open the Capture Editor (`Right-Click -> Edit Coordinates`):
-
 #### OBS Plugin
 
 The AutoSplit64+ Grabber OBS plugin sends the gameplay directly to AutoSplit64+ before any modifications are done to it. Changing size, adding effects, overlays, etc. are not captured do not influence the result. 
@@ -79,7 +81,17 @@ The AutoSplit64+ Grabber OBS plugin sends the gameplay directly to AutoSplit64+ 
 - Copy the plugin file `autosplit64plus-framegrabber.dll` located in `AutpSplit64plus/OBS-Plugin` to your OBS plugin folder
 - Usually located in `C:\Program Files\obs-studio\obs-plugins\64bit`
 - Open OBS
-![OBS Plugin](repo/capture_screen_obs.png)
+- Open the Filters Menu of your capture card source (`Right-Click -> Filters`)
+- Add (+) Effects Filter and choose `AS64+ Frame Grabber`
+![OBS Filter Menu](repo/obs_filters_screen.png)
+![OBS Plugin](repo/obs_plugin_screen.png)
+
+- If you have any other Filters applied, make sure `AS64+ Frame Grabber` is at the very top
+- Close Filters Menu
+##### Setup AutoSplit64+:
+- Open the Capture Editor in AutoSplit64+ (`Right-Click -> Edit Coordinates`):
+
+![OBS Plugin Capture](repo/capture_screen_obs.png)
 
 - Check `Use OBS Plugin`
 - Pressing `Capture Screen` will update the shown frame.
@@ -92,6 +104,9 @@ If the region was not detected poperly, adjust the region manually and ensure it
 
 #### Window Capture
 Window Capture will take a screenshot of the selected programm 30 times/second.
+
+- Make sure you have your capture software open (i.e.AmaRecTV)
+- Open the Capture Editor in AutoSplit64+ (`Right-Click -> Edit Coordinates`):
  
 ![Window Capture](repo/capture_screen_window.png)
 
@@ -144,8 +159,7 @@ If you encounter any issues, please run through all steps below.
 3. Run `build.bat` to create executable
 
 ## Support
-- For support on the new Plus Features: [Join our Discord](https://discord.gg/VmrQQBpPSK)
-- For support on base Features: [Join the AutoSplit64 Discord](https://discord.gg/Q4TrSqB)
+- For help join our [Discord](https://discord.gg/VmrQQBpPSK)
 
 ## Credits
 Developed with ❤️ by [Davi Be](https://github.com/DaviBe92)
@@ -156,5 +170,4 @@ Gerardo Cervantes - [Star Classifier](https://github.com/gerardocervantes8/Star-
 
 #### TODO
 
-- Autostart detecting
 - RetroSpy integration for reset detection

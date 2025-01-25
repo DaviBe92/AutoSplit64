@@ -331,7 +331,8 @@ static void filter_render(void *data, gs_effect_t *effect)
 static void filter_destroy(void *data)
 {
 	struct filter_data *filter = data;
-	if (filter) {
+	if (filter && filter->is_valid) {
+		filter_instance_exists = false;
 		if (filter->render)
 			gs_texrender_destroy(filter->render);
 		if (filter->staging)

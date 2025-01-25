@@ -171,6 +171,9 @@ class GeneralMenu(BaseMenu):
 
         self.mode_lb = QtWidgets.QLabel("Operation Mode:")
         self.mode_combo = QtWidgets.QComboBox()
+        
+        self.autostart_lb = QtWidgets.QLabel("Autostart:")
+        self.autostart_cb = QtWidgets.QCheckBox()
 
         self.on_top_lb = QtWidgets.QLabel("Always On Top:")
         self.on_top_cb = QtWidgets.QCheckBox()
@@ -207,6 +210,10 @@ class GeneralMenu(BaseMenu):
         self.update_check_lb.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.update_check_lb.setMaximumWidth(130)
         self.update_check_cb.setMaximumWidth(20)
+        
+        self.autostart_lb.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.autostart_cb.setMaximumWidth(130)
+        self.autostart_cb.setMaximumWidth(20)
 
         # Add Widgets
         self.menu_layout.addWidget(self.on_top_lb, 2, 0)
@@ -214,42 +221,45 @@ class GeneralMenu(BaseMenu):
 
         self.menu_layout.addWidget(self.update_check_lb, 3, 0)
         self.menu_layout.addWidget(self.update_check_cb, 3, 1)
+        
+        self.menu_layout.addWidget(self.autostart_lb, 4, 0)
+        self.menu_layout.addWidget(self.autostart_cb, 4, 1)
 
         self.menu_layout.addItem(
-            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 3, 0)
+            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 6, 0)
 
-        self.menu_layout.addWidget(HLine(), 4, 0, 1, 3)
-
-        self.menu_layout.addItem(
-            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 5, 0)
-
-        self.menu_layout.addWidget(self.mode_lb, 6, 0)
-        self.menu_layout.addWidget(self.mode_combo, 6, 1)
+        self.menu_layout.addWidget(HLine(), 7, 0, 1, 3)
 
         self.menu_layout.addItem(
-            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 7, 0)
+            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 8, 0)
 
-        self.menu_layout.addWidget(HLine(), 8, 0, 1, 3)
-
-        self.menu_layout.addItem(
-            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 9, 0)
-
-        self.menu_layout.addWidget(self.mid_run_lb, 10, 0)
-        self.menu_layout.addWidget(self.mid_run_cb, 10, 1)
+        self.menu_layout.addWidget(self.mode_lb, 9, 0)
+        self.menu_layout.addWidget(self.mode_combo, 9, 1)
 
         self.menu_layout.addItem(
-            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 11, 0)
+            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 10, 0)
 
-        self.menu_layout.addWidget(HLine(), 12, 0, 1, 3)
+        self.menu_layout.addWidget(HLine(), 11, 0, 1, 3)
 
         self.menu_layout.addItem(
-            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 13, 0)
+            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 12, 0)
 
-        self.menu_layout.addWidget(self.override_ver_lb, 14, 0)
-        self.menu_layout.addWidget(self.override_ver_cb, 14, 1)
+        self.menu_layout.addWidget(self.mid_run_lb, 13, 0)
+        self.menu_layout.addWidget(self.mid_run_cb, 13, 1)
+
         self.menu_layout.addItem(
-            QtWidgets.QSpacerItem(10, 5, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum), 14, 2)
-        self.menu_layout.addWidget(self.override_ver_combo, 15, 1)
+            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 14, 0)
+
+        self.menu_layout.addWidget(HLine(), 15, 0, 1, 3)
+
+        self.menu_layout.addItem(
+            QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum), 16, 0)
+
+        self.menu_layout.addWidget(self.override_ver_lb, 17, 0)
+        self.menu_layout.addWidget(self.override_ver_cb, 17, 1)
+        self.menu_layout.addItem(
+            QtWidgets.QSpacerItem(10, 5, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum), 18, 2)
+        self.menu_layout.addWidget(self.override_ver_combo, 19, 1)
 
         self.menu_layout.addItem(QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding), 30, 0)
 
@@ -267,6 +277,7 @@ class GeneralMenu(BaseMenu):
         self.mid_run_cb.setChecked(config.get("general", "mid_run_start_enabled"))
         self.on_top_cb.setChecked(config.get("general", "on_top"))
         self.update_check_cb.setChecked(config.get("general", "update_check"))
+        self.autostart_cb.setChecked(config.get("general", "auto_start"))
 
         if config.get("game", "version") == "US":
             self.override_ver_combo.setCurrentIndex(1)
@@ -282,6 +293,7 @@ class GeneralMenu(BaseMenu):
         config.set_key("general", "operation_mode", self.mode_combo.currentIndex())
         config.set_key("general", "on_top", self.on_top_cb.isChecked())
         config.set_key("general", "update_check", self.update_check_cb.isChecked())
+        config.set_key("general", "auto_start", self.autostart_cb.isChecked())
 
 class ThresholdsMenu(BaseMenu):
     def __init__(self, parent=None):

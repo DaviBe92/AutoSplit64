@@ -161,7 +161,7 @@ class App(QtWidgets.QMainWindow):
         self.star_count.split_star = split_star
 
     def autostart(self):
-        if config.get("general", "auto_start"):
+        if config.get("general", "auto_start") and self.start_btn.get_state() == "start":
             self.autostarter_active = True
             self.start_btn.set_state("init")
             
@@ -172,14 +172,14 @@ class App(QtWidgets.QMainWindow):
                     self.start.emit()
                     QtCore.QTimer.singleShot(2000, try_start)
             try_start()
-            # Quit the autostarter after trying for 10 seconds
+            # Quit the autostarter after trying for 5 minutes
             def quit_autostarter():
                 if self.autostarter_active:
                     self.autostarter_active = False
                     self.start_btn.set_state("start")
                     self.stop.emit()
                     self.display_error_message("Failed to auto start timer.", "AutoStart Error")
-            QtCore.QTimer.singleShot(60000, quit_autostarter)
+            QtCore.QTimer.singleShot(300000, quit_autostarter)
 
     def start_clicked(self):
         if self.start_btn.get_state() == "stop" or self.start_btn.get_state() == "init":
@@ -300,9 +300,9 @@ class App(QtWidgets.QMainWindow):
         context_menu.addSeparator()
         output_action = context_menu.addAction("Show Output")
         context_menu.addSeparator()
-        on_top_action = QtGui.QAction("Always On Top", self, checkable=True)
-        context_menu.addAction(on_top_action)
-        on_top_action.setChecked(config.get("general", "on_top"))
+        autostart_action = QtGui.QAction("Autostart", self, checkable=True)
+        context_menu.addAction(autostart_action)
+        autostart_action.setChecked(config.get("general", "auto_start"))
         context_menu.addSeparator()
         about_action = context_menu.addAction("About")
         context_menu.addSeparator()
@@ -331,11 +331,11 @@ class App(QtWidgets.QMainWindow):
             self.dialogs["reset_dialog"].show()
         elif action == output_action:
             self.dialogs["output_dialog"].show()
-        elif action == on_top_action:
-            checked = on_top_action.isChecked()
-            config.set_key("general", "on_top", checked)
+        elif action == autostart_action:
+            checked = autostart_action.isChecked()
+            config.set_key("general", "auto_start", checked)
             config.save_config()
-            self.set_always_on_top(config.get("general", "on_top"))
+            self.autostart()
         elif action == about_action:
             self.dialogs["about_dialog"].show()
         elif action == exit_action:
