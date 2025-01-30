@@ -1,5 +1,7 @@
 from . import capture_shmem
 from . import capture_window
+from .image_utils import enhance_contrast
+import numpy as np
 
 from .constants import (
     GAME_US,
@@ -28,10 +30,11 @@ from .constants import (
 
 
 class GameCapture(object):
-    def __init__(self, use_obs, process_name, game_region, version):
+    def __init__(self, use_obs, vc_fix, process_name, game_region, version):
         # Initialize GameCapture
         self._use_obs = use_obs
         self._process_name = process_name
+        self._vc_fix = vc_fix
         
         if self._use_obs:
         # Initialize SharedMemoryCapture
@@ -92,6 +95,11 @@ class GameCapture(object):
 
         else:
             self._window_image = capture_window.capture(self._hwnd) 
+            
+        if self._vc_fix:
+            # Fix for VC (Experimental) - Increases latency
+            self._window_image = enhance_contrast(self._window_image, 1.2)
+        
         self._region_images = {}  
 
     def get_capture_size(self):

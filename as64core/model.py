@@ -20,7 +20,7 @@ class Model(object):
             # Configure ONNX Runtime session options
             session_options = ort.SessionOptions()
             session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-            session_options.intra_op_num_threads = 4  # Adjust based on CPU cores
+            session_options.intra_op_num_threads = 1
             session_options.inter_op_num_threads = 1
             session_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
             

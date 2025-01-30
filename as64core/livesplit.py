@@ -76,6 +76,8 @@ def split(ls_socket) -> None:
 def reset(ls_socket) -> None:
     send(ls_socket, "reset\r\n")
 
+def restart(ls_socket) -> None:
+    send(ls_socket, "reset\r\nstarttimer\r\n")
 
 def skip(ls_socket) -> None:
     send(ls_socket, "skipsplit\r\n")

@@ -34,3 +34,19 @@ def cv2_convert_to_gray(img):
 
 def np_convert_to_gray(np_rgb):
     return np.dot(np_rgb[..., :3], [0.299, 0.587, 0.114])
+
+def enhance_contrast(image, contrast_factor=0.85):
+    
+    # Convert to float for calculations
+    img_float = image.astype(float)
+    
+    # Calculate mean brightness
+    mean = np.mean(img_float)
+    
+    # Apply contrast adjustment
+    enhanced = mean + (img_float - mean) * contrast_factor
+    
+    # Clip and convert back to uint8
+    enhanced = np.clip(enhanced, 0, 255).astype(np.uint8)
+    
+    return enhanced

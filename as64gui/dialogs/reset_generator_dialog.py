@@ -287,7 +287,7 @@ class ResetGenerator(QtCore.QThread):
     def __init__(self):
         super().__init__()
         self._running = False
-        self._game_capture = GameCapture(config.get("game", "use_obs"), config.get("game", "process_name"), config.get("game", "game_region"), GAME_JP)
+        self._game_capture = GameCapture(config.get("game", "use_obs"), config.get("game", "vc_fix"), config.get("game", "process_name"), config.get("game", "game_region"), GAME_JP)
 
     def run(self):
         self._running = True

@@ -45,6 +45,7 @@ class CaptureEditor(QtWidgets.QDialog):
         self.process_combo = QtWidgets.QComboBox()
         self.capture_btn = QtWidgets.QPushButton("Capture Screen")
         self.auto_region_btn = QtWidgets.QPushButton("Auto Detect Region")
+        self.vc_fix_cb = QtWidgets.QCheckBox("VC fix (experimental)")
 
         # Graphics View
         self.graphics_scene = CaptureGraphicsScene()
@@ -89,8 +90,9 @@ class CaptureEditor(QtWidgets.QDialog):
         self.left_layout.addWidget(self.process_combo, 1, 1)
         self.left_layout.addWidget(self.capture_btn, 2, 0, 1, 2)
         self.left_layout.addWidget(self.auto_region_btn, 3, 0, 1, 2)
+        self.left_layout.addWidget(self.vc_fix_cb, 4, 0, 1, 2)
 
-        self.left_layout.addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Expanding), 4, 0)
+        self.left_layout.addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Expanding), 5, 0)
 
         # Add connection for checkbox
         self.use_obs_cb.stateChanged.connect(self.toggle_capture_method)
@@ -154,6 +156,9 @@ class CaptureEditor(QtWidgets.QDialog):
         use_obs = config.get("game", "use_obs")
         self.use_obs_cb.setChecked(use_obs)
         self.toggle_capture_method(use_obs)
+        
+        vc_fix = config.get("game", "vc_fix")
+        self.vc_fix_cb.setChecked(vc_fix)
 
         self.refresh_graphics_scene()
 
@@ -161,13 +166,13 @@ class CaptureEditor(QtWidgets.QDialog):
         super().show()
 
     def apply_clicked(self):
-        if not self._is_correct_ratio():
-            if self.display_warning("A non 4:3 game ratio was detected, you may experience sub-optimal performance."):
-                return
+        # if not self._is_correct_ratio():
+        #     if self.display_warning("A non 4:3 game ratio was detected, you may experience sub-optimal performance."):
+        #         return
 
-        if not self._is_minimum_size():
-            if self.display_warning("Game width and height are below the recommended minimum (614, 448). You may experience sub-optimal performance."):
-                return
+        # if not self._is_minimum_size():
+        #     if self.display_warning("Game width and height are below the recommended minimum (614, 448). You may experience sub-optimal performance."):
+        #         return
 
         # Config
         config.set_key("game", "use_obs", self.use_obs_cb.isChecked())
@@ -182,6 +187,8 @@ class CaptureEditor(QtWidgets.QDialog):
                 config.set_key("game", "capture_size", capture_window.get_capture_size(self._process_list[self.process_combo.currentIndex()][1]))
         except:
             pass
+        
+        config.set_key("game", "vc_fix", self.vc_fix_cb.isChecked())
 
         config.save_config()
         # Close the shared memory connection

@@ -60,7 +60,7 @@ class Base(Thread):
                 version = config.get("route", "path")
 
         # Initialize the Game Capture
-        self._game_capture = GameCapture(config.get("game", "use_obs"), config.get("game", "process_name"), config.get("game", "game_region"), version)
+        self._game_capture = GameCapture(config.get("game", "use_obs"), config.get("game", "vc_fix"), config.get("game", "process_name"), config.get("game", "game_region"), version)
 
         # Initialise Prediction Model
         if config.get("model", "legacy"):
@@ -168,6 +168,7 @@ class Base(Thread):
         as64.force_update = self._update_occurred
         as64.split = self.split
         as64.reset = self.reset
+        as64.restart = self.restart
         as64.skip = self.skip
         as64.undo = self.undo
         as64.incoming_split = self.incoming_split
@@ -237,12 +238,10 @@ class Base(Thread):
             
             while self._running:
                 as64.current_time = time.time()
-
-                try:
-                    self._game_capture.capture()
-
+                
+                if self._game_capture.capture():
+                
                     ls_index = max(livesplit.split_index(self._ls_socket), 0)
-               
                     if ls_index != self.split_index():
                         self.set_split_index(ls_index)
 
@@ -252,22 +251,20 @@ class Base(Thread):
 
                     if self._count_xcams:
                         self.analyze_xcam_status()
-                except Exception as e:
-                    self._error_occurred(str(e))
 
-                try:
-                    if self._in_game:
-                        self._processor_switch.execute(self._current_split.split_type)
-                    else:
-                        self._processor_switch.execute(SPLIT_INITIAL)
-                except ConnectionAbortedError:
-                    self._error_occurred("LiveSplit connection failed")
+                    try:
+                        if self._in_game:
+                            self._processor_switch.execute(self._current_split.split_type)
+                        else:
+                            self._processor_switch.execute(SPLIT_INITIAL)
+                    except ConnectionAbortedError:
+                        self._error_occurred("LiveSplit connection failed")
                 
-                try:
-                    as64.execution_time = time.time() - as64.current_time
-                    time.sleep(1 / as64.fps - as64.execution_time)
-                except ValueError:
-                    pass
+                    try:
+                        as64.execution_time = time.time() - as64.current_time
+                        time.sleep(1 / as64.fps - as64.execution_time)
+                    except ValueError:
+                        pass
                 
         except Exception:
             self.logger.error("Fatal Error", exc_info=True)
@@ -472,6 +469,13 @@ class Base(Thread):
     def reset(self):
         livesplit.reset(self._ls_socket)
 
+        self.set_star_count(self._route.initial_star)
+        as64.xcam_count = 0
+        self._in_game = False
+        self._split_on_current_xcam = False
+
+    def restart(self):
+        livesplit.restart(self._ls_socket)
         self.set_star_count(self._route.initial_star)
         as64.xcam_count = 0
         self._in_game = False
