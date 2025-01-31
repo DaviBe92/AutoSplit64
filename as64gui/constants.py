@@ -1,4 +1,4 @@
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 TITLE = "AutoSplit 64+"
 AUTHOR = "Davi Be\nSynozure"
 
