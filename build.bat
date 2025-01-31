@@ -7,7 +7,7 @@ pyinstaller ^
 --icon "resources\gui\icons\as64plus.ico" ^
 --noconsole ^
 --clean ^
---optimize=2 ^
+--noupx ^
 --contents-directory "libraries" ^
 AutoSplit64.py
 
